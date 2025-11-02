@@ -2,12 +2,11 @@ import { cwd } from "node:process";
 import { Octokit } from "octokit";
 import "zx/globals";
 
-const ORG = "arjix-aur";
+const org = "arjix-aur";
+const owner = org;
 
 const octokit = new Octokit({ auth: process.env.TOKEN });
-const repos = await octokit.rest.repos.listForOrg({
-    org: "arjix-aur",
-});
+const repos = await octokit.rest.repos.listForOrg({ org });
 
 const packages = repos.data
     .filter(({ topics }) => topics?.includes("pkg"))
@@ -31,7 +30,7 @@ const CLONES_DIR = "/home/docker/.clones";
 
 const origin = cwd();
 
-const repositories: { org: string; repo: string; tag: string }[] = [];
+const repositories: { repo: string; tag: string }[] = [];
 
 for (const { pkg, repo } of packages) {
     cd(origin);
@@ -45,7 +44,7 @@ for (const { pkg, repo } of packages) {
         const version = await $`source PKGBUILD > /dev/null && echo -n "\${pkgver}-\${pkgrel}"`.text();
         const tag = `aur/${version}`;
 
-        repositories.push({ org: ORG, repo, tag });
+        repositories.push({ repo, tag });
     } catch (e) {
         console.error(`Failed to fetch version for ${pkg}`, e);
         fs.remove(path.resolve(origin, pkg));
@@ -55,12 +54,12 @@ for (const { pkg, repo } of packages) {
 cd("..");
 fs.remove(origin);
 
-for (const { org, repo, tag } of repositories) {
+for (const { repo, tag } of repositories) {
     console.log("checking", { repo, tag });
 
     try {
         await octokit.rest.git.getRef({
-            owner: org,
+            owner,
             repo,
             ref: `tags/${tag}`,
         });
@@ -70,7 +69,7 @@ for (const { org, repo, tag } of repositories) {
     } catch {}
 
     const release = await octokit.rest.repos.createRelease({
-        owner: org,
+        owner,
         repo,
         tag_name: tag,
         target_commitish: "main",

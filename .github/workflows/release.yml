@@ -1,0 +1,51 @@
+name: Update arjix-aur releases
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Cron expression for "every 2 hours on xx:30"
+    - cron: "30 */2 * * *"
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/arjix-aur/runner-image-arch:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize pacman
+        run: |
+          sudo pacman-key --init
+          sudo pacman-key --populate archlinux
+          paru -Sy archlinux-keyring --noconfirm
+
+          sudo pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+          sudo pacman-key --lsign-key 3056513887B78AEB
+
+          paru -Syu --noconfirm --ignore linux
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm release
+        env:
+          TOKEN: "${{ secrets.ORG_TOKEN }}"
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "assets/*.pkg.tar.zst"
+          fail_on_unmatched_files: true
+          tag_name: latest
+          make_latest: true
