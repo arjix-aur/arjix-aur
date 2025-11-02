@@ -38,6 +38,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - run: pnpm start
+      - run: pnpm dispatch
         env:
           TOKEN: "${{ secrets.ORG_TOKEN }}"

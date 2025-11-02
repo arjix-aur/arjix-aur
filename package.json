@@ -1,27 +1,27 @@
 {
-  "name": "arjix-aur",
-  "private": true,
-  "version": "0.1.0",
-  "description": "",
-  "type": "module",
-  "main": "src/index.ts",
-  "scripts": {
-    "start": "vite-node --script src/main.ts"
-  },
-  "keywords": [],
-  "author": "ArjixWasTaken",
-  "license": "ISC",
-  "packageManager": "pnpm@10.18.2",
-  "dependencies": {
-    "octokit": "^5.0.5",
-    "zx": "^8.8.5"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.3.2",
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.9.2",
-    "typescript": "^5.9.3",
-    "vite": "^7.1.12",
-    "vite-node": "^3.2.4"
-  }
+    "name": "arjix-aur",
+    "private": true,
+    "version": "0.1.0",
+    "description": "",
+    "type": "module",
+    "main": "src/index.ts",
+    "scripts": {
+        "dispatch": "vite-node --script src/dispatcher.ts"
+    },
+    "keywords": [],
+    "author": "ArjixWasTaken",
+    "license": "ISC",
+    "packageManager": "pnpm@10.18.2",
+    "dependencies": {
+        "octokit": "^5.0.5",
+        "zx": "^8.8.5"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.3.2",
+        "@types/fs-extra": "^11.0.4",
+        "@types/node": "^24.9.2",
+        "typescript": "^5.9.3",
+        "vite": "^7.1.12",
+        "vite-node": "^3.2.4"
+    }
 }
