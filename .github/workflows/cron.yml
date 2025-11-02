@@ -1,5 +1,10 @@
+name: Check for releases
+
 on:
   workflow_dispatch:
+  schedule:
+    # Cron expression for "every 2 hours"
+    - cron: "0 */2 * * *"
 
 jobs:
   sync:
