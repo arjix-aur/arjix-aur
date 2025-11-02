@@ -22,10 +22,10 @@ if (packages.length === 0) {
     process.exit(0);
 }
 
-const CLONES_DIR = ".clones";
+const CLONES_DIR = "/home/docker/.clones";
 {
-    await fs.remove(CLONES_DIR);
-    await fs.mkdir(CLONES_DIR);
+    await $`runuser -u docker -- rm -rf ${CLONES_DIR}`;
+    await $`runuser -u docker -- mkdir ${CLONES_DIR}`;
     cd(CLONES_DIR);
 }
 
