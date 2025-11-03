@@ -110,6 +110,7 @@ for (const fileName of repoFilesToDownload) {
 
         if (fileName.endsWith(".db") || fileName.endsWith(".files")) {
             await fs.rename(path.resolve("assets", fileName), path.resolve("assets", `${fileName}.tar.gz`));
+            await fs.symlink(path.resolve("assets", `${fileName}.tar.gz`), path.resolve("assets", `${fileName}`));
         }
     }
 }
@@ -154,7 +155,7 @@ const repoFilesToUpload = [
 
 for (const fileName of repoFilesToUpload) {
     if (fs.existsSync(fileName)) {
-        console.log(" ==> Uploading/Re-uploading repo file", fileName);
+        console.log(" ==> Uploading repo file", fileName);
         const existingAsset = latestRelease.data.assets.find((asset) => asset.name === fileName);
         if (existingAsset) {
             await octokit.rest.repos.deleteReleaseAsset({
@@ -175,7 +176,7 @@ for (const fileName of repoFilesToUpload) {
 
 // Upload other local assets that are not in remote assets
 for (const localAssetName of await fs.readdir(".")) {
-    if (localAssetName.startsWith("arjix-aur") && !repoFilesToUpload.includes(localAssetName) && !remoteAssetNames.includes(localAssetName)) {
+    if (!repoFilesToUpload.includes(localAssetName) && !remoteAssetNames.includes(localAssetName)) {
         console.log(" ==> Uploading", localAssetName);
         await octokit.rest.repos.uploadReleaseAsset({
             owner,
