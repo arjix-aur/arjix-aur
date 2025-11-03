@@ -57,7 +57,7 @@ if (remoteAssetNames.length > 0) {
         remoteAssetSet.size === localAssetSet.size &&
         [...remoteAssetSet].every((name) => localAssetSet.has(name))
     ) {
-        fs.appendFileSync(process.env.GITHUB_OUTPUT!, `skip=true`);
+        fs.appendFileSync(process.env.GITHUB_OUTPUT!, `skip=true\n`);
         console.log(" ==> No changes detected, skipping release.");
         process.exit(0);
     }
