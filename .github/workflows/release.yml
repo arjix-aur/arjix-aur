@@ -41,10 +41,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - run: pnpm release
+        id: release
         env:
           TOKEN: "${{ secrets.ORG_TOKEN }}"
 
       - name: Release
+        if: ${{ steps.release.outputs.skip != 'true' }}
         uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

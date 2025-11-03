@@ -15,6 +15,19 @@ if (packages.length === 0) {
     process.exit(0);
 }
 
+let release_id: number | undefined = undefined;
+let remoteAssetNames: string[] = [];
+try {
+    const { data: latestRelease } = await octokit.rest.repos.getLatestRelease({
+        owner,
+        repo: ".github",
+    });
+    release_id = latestRelease.id;
+    remoteAssetNames = latestRelease.assets.map((asset) => asset.name);
+} catch (_) {
+    console.log("No existing release found, proceeding with a new one.");
+}
+
 const allAssets = [];
 for (const { name: repo } of packages) {
     const { status, data: releases } = await octokit.rest.repos.listReleases({
@@ -28,9 +41,25 @@ for (const { name: repo } of packages) {
     }
 
     const assets = releases.flatMap(({ assets }) => assets);
-    for (const asset of assets) {
-        console.log(" ==> Found", asset.name);
-        allAssets.push(asset);
+    for (const _ of assets) {
+        console.log(" ==> Found", _.name);
+        allAssets.push(_);
+    }
+}
+
+const localAssetNames = allAssets.map((asset) => asset.name);
+
+if (remoteAssetNames.length > 0) {
+    const remoteAssetSet = new Set(remoteAssetNames);
+    const localAssetSet = new Set(localAssetNames);
+
+    if (
+        remoteAssetSet.size === localAssetSet.size &&
+        [...remoteAssetSet].every((name) => localAssetSet.has(name))
+    ) {
+        fs.appendFileSync(process.env.GITHUB_OUTPUT!, `skip=true`);
+        console.log(" ==> No changes detected, skipping release.");
+        process.exit(0);
     }
 }
 
@@ -55,11 +84,19 @@ for (const asset of allAssets) {
 }
 
 cd("assets");
-await $`repo-add --include-sigs arjix-aur.db.tar.gz ./*.pkg.tar.zst`;
+await $`find . -name '*.pkg.tar.zst' | sort | xargs repo-add --include-sigs arjix-aur.db.tar.gz`;
 {
     await fs.remove("arjix-aur.db");
     await fs.remove("arjix-aur.files");
 
     await fs.rename("arjix-aur.db.tar.gz", "arjix-aur.db");
     await fs.rename("arjix-aur.files.tar.gz", "arjix-aur.files");
+}
+
+if (release_id !== undefined) {
+    await octokit.rest.repos.deleteRelease({
+        owner,
+        repo: ".github",
+        release_id,
+    });
 }
